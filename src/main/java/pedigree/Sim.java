@@ -25,11 +25,7 @@
 package pedigree;
 
 
-
-
-
-
-
+import java.util.Random;
 
 public class Sim implements Comparable<Sim>{
     private static int SIM_COUNT=0;
@@ -50,7 +46,13 @@ public class Sim implements Comparable<Sim>{
         return Double.compare(this.deathtime,o.deathtime);
     }
     
-    public enum Sex {F, M};
+    public enum Sex {
+        F, M;
+        private static final Random rnd = new Random();
+        public static Sex getSex(){
+            return rnd.nextBoolean()?M:F;
+        }
+    };
 
     private final int sim_ident;
     private double birthtime;
