@@ -12,4 +12,12 @@ public class simtest {
         int result = sim.add(2, 3);
         assertEquals(5, result);
     }
+
+    @Test
+    public void testNextReproduction() {
+        Sim sim = new Sim(Sim.Sex.F);
+        double minAge = 0;
+        double maxAge = 40;
+
+    }
 }

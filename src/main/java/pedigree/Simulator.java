@@ -1,31 +1,41 @@
 package pedigree;
 
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
-import java.util.Random;
+import java.util.*;
 
 import pedigree.Sim.*;
 
 public class Simulator {
     private PriorityQueue<Event> events;
-    private PriorityQueue<Sim> population;
+    private PriorityQueue<Sim> males;
+    private PriorityQueue<Sim> females;
     private final AgeModel model;
     private double calendarTime;
     private final Random rnd;
     private final float fidelity = 0.1F;
+    private final double span;
 
     static class EventComparator implements Comparator<Event>{
         @Override
         public int compare(Event o1, Event o2) {
-            return Double.compare(o1.time,o2.time);
+            return Double.compare(o1.getTime(),o2.getTime());
+        }
+    }
+
+    static class PopComparator implements Comparator<Sim>{
+        @Override
+        public int compare(Sim o1, Sim o2) {
+            return Double.compare(o1.getBirthTime(),o2.getBirthTime());
         }
     }
     public Simulator() {
         events = new PriorityQueue<>(new EventComparator());
-        population = new PriorityQueue<>();
+        males = new PriorityQueue<>(new PopComparator());
+        females = new PriorityQueue<>(new PopComparator());
         model = new AgeModel();
+        span = model.expectedParenthoodSpan(Sim.MIN_MATING_AGE_F, Sim.MAX_MATING_AGE_F);
         rnd = new Random();
+        calendarTime = 0.0;
     }
 
     public double getTime(){
@@ -35,6 +45,11 @@ public class Simulator {
     public void setTime(double time){
         calendarTime = time;
     }
+
+    public int getPopulation(){
+        return males.size() + females.size();
+    }
+
     public enum Events {Birth, Death, Reproduction};
 
     public class Event {
@@ -68,60 +83,99 @@ public class Simulator {
     }
 
     public void Birth(Sim founder){
-        population.add(founder);
         if (founder.getSex().equals(Sex.F)){
-            events.add(new Event(Events.Reproduction, founder, founder.getBirthTime()));
+            females.add(founder);
+            double firstReproduction = founder.getBirthTime() + Sim.MIN_MATING_AGE_F + rnd.nextDouble() * span;
+            events.add(new Event(Events.Reproduction, founder, firstReproduction));
         }
-        double death = model.randomAge(rnd);
-        founder.setDeath(death);
+        else {
+            males.add(founder);
+        }
+        double death = founder.getBirthTime() + model.randomAge(rnd);
+        founder.setDeath(calendarTime + death);
         events.add(new Event(Events.Death, founder, founder.getDeathTime()));
     }
 
     public void Birth(Sim mother, Sim father){
         Sex sex = Sex.getSex();
         Sim child = new Sim(mother, father, calendarTime, sex);
-        population.add(child);
         if (child.getSex().equals(Sex.F)){
-            events.add(new Event(Events.Reproduction, child, child.getBirthTime()));
+            females.add(child);
+            double firstReproduction = child.getBirthTime() + Sim.MIN_MATING_AGE_F + rnd.nextDouble() * span;
+            events.add(new Event(Events.Reproduction, child, firstReproduction));
         }
-        double death = model.randomAge(rnd);
-        child.setDeath(death);
+        else {
+            males.add(child);
+        }
+        double death = child.getBirthTime() + model.randomAge(rnd);
+        child.setDeath(calendarTime + death);
         events.add(new Event(Events.Death, child, child.getDeathTime()));
     }
 
     public void Death(Sim s){
-        population.remove(s);
+        if (s.getSex().equals(Sex.F)) {
+            females.remove(s);
+        }
+        else {
+            males.remove(s);
+        }
     }
 
     public boolean isFaithful(){
-        return rnd.nextFloat() > fidelity;
+        return rnd.nextDouble() > fidelity;
     }
 
     public Sim Mate(Sim f){
         if (f.isInARelationship(calendarTime) && isFaithful()){
             return f.getMate();
         }
-        else{
-            //todo: expensive filtering operation, maintain male and female queues?
-            Object[] males = population.stream().filter(p -> p.getSex() == Sex.M && p.isMatingAge(calendarTime)).toArray();
-            Sim mate = (Sim)males[rnd.nextInt(males.length)];
-            f.setMate(mate);
+        if (males.isEmpty()){
+            return null;
         }
+        List<Sim> availableMales = new ArrayList<>();
+        for (Sim m : males){
+            if (m.isMatingAge(calendarTime)){
+                if(!m.isInARelationship(calendarTime) || !isFaithful()){
+                    availableMales.add(m);
+                }
+            }
+        }
+        if (availableMales.isEmpty()){
+            return null;
+        }
+
+        Sim male = availableMales.get(rnd.nextInt(availableMales.size()));
+
+        f.setMate(male);
+        male.setMate(f);
+
         return f.getMate();
     }
 
     private double nextReproduction(Sim s){
         double age = calendarTime - s.getBirthTime();
-        return rnd.nextDouble(model.expectedParenthoodSpan(age, Sim.MAX_MATING_AGE_F));
+        if (age < Sim.MIN_MATING_AGE_F){
+            double wait = Sim.MIN_MATING_AGE_F - age;
+            return calendarTime + wait;
+        }
+        double maxReproduction = s.getBirthTime() + Sim.MAX_MATING_AGE_F;
+        double nextTime = calendarTime + span * rnd.nextDouble();
+        return Math.min(nextTime, maxReproduction);
     }
     public void Reproduction(Sim mother){
-        if (mother.getDeathTime()> calendarTime){
-            Death(mother);
+        if (mother.getDeathTime() < calendarTime){
+            return;
         }
-        else if (mother.isMatingAge(calendarTime)) {
+        if (mother.isMatingAge(calendarTime)) {
             Sim father = Mate(mother);
-            Birth(mother, father);
+            if (father != null) {
+                Birth(mother, father);
+            }
         }
-        events.add(new Event(Events.Reproduction, mother, nextReproduction(mother)));
+        double nextTime = nextReproduction(mother);
+        if (nextTime < mother.getDeathTime() &&
+                calendarTime - mother.getBirthTime() < Sim.MAX_MATING_AGE_F) {
+            events.add(new Event(Events.Reproduction, mother, nextTime));
+        }
     }
 }
