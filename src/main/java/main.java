@@ -15,7 +15,9 @@ class simulate {
         while (simulator.hasEvents()){
             if (tMax < simulator.getTime()) break; // arrêter à tMax
             Simulator.Event E = simulator.getEvent();
-
+            if (E.getTime() < simulator.getTime()) {
+                throw new RuntimeException("Time loop");
+            }
             simulator.setTime(E.getTime());
 
             switch (E.getEvent()) {

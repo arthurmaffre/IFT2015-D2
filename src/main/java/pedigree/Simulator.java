@@ -12,7 +12,7 @@ public class Simulator {
     private final AgeModel model;
     private double calendarTime;
     private final Random rnd;
-    private final float fidelity = 0.1F;
+    private final double fidelity = 0.1;
     private final double span;
 
     static class EventComparator implements Comparator<Event>{
@@ -160,7 +160,8 @@ public class Simulator {
         }
         double maxReproduction = s.getBirthTime() + Sim.MAX_MATING_AGE_F;
         double nextTime = calendarTime + span * rnd.nextDouble();
-        return Math.min(nextTime, maxReproduction);
+        if (nextTime < maxReproduction) { return nextTime; }
+        else { return -1; }
     }
     public void Reproduction(Sim mother){
         if (mother.getDeathTime() < calendarTime){
@@ -173,7 +174,7 @@ public class Simulator {
             }
         }
         double nextTime = nextReproduction(mother);
-        if (nextTime < mother.getDeathTime() &&
+        if (nextTime > 0 && nextTime < mother.getDeathTime() &&
                 calendarTime - mother.getBirthTime() < Sim.MAX_MATING_AGE_F) {
             events.add(new Event(Events.Reproduction, mother, nextTime));
         }
