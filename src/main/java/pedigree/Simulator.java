@@ -18,7 +18,7 @@ public class Simulator {
     private final double reproductionRate;
 
     private static final double DEFAULT_FIDELITY = 0.1;
-    private static final double DEFAULT_STABLE_RATE = 2.2;
+    private static final double DEFAULT_STABLE_RATE = 2.0;
 
     static class EventComparator implements Comparator<Event>{
         @Override
