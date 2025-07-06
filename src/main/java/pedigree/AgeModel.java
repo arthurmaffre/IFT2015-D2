@@ -191,7 +191,7 @@ public class AgeModel {
         avg /= smp_size;
         Arrays.sort(lifespan);
         
-        // plot for distrubution functiominAgen - 1st and 3rd columns should match (empirical vs. theoretical cumulative distribution function)
+        // plot for distrubution function - 1st and 3rd columns should match (empirical vs. theoretical cumulative distribution function)
         for (int r = 0; r<smp_size; r++){
             System.out.println((1+r)+"\t"+lifespan[r]+"\t"+smp_size*(1.0-M.getSurvival(lifespan[r])));
         }
