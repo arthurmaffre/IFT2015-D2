@@ -12,8 +12,12 @@ public class Simulator {
     private final AgeModel model;
     private double calendarTime;
     private final Random rnd;
-    private final double fidelity = 0.1;
+    private final double fidelity;
     private final double span;
+    private final double reproductionRate;
+
+    private static final double DEFAULT_FIDELITY = 0.1;
+    private static final double DEFAULT_STABLE_RATE = 2.0;
 
     static class EventComparator implements Comparator<Event>{
         @Override
@@ -34,6 +38,8 @@ public class Simulator {
         females = new PriorityQueue<>(new PopComparator());
         model = new AgeModel();
         span = model.expectedParenthoodSpan(Sim.MIN_MATING_AGE_F, Sim.MAX_MATING_AGE_F);
+        fidelity = DEFAULT_FIDELITY;
+        reproductionRate = DEFAULT_STABLE_RATE/span;
         rnd = new Random();
         calendarTime = 0.0;
     }
@@ -85,14 +91,14 @@ public class Simulator {
     public void Birth(Sim founder){
         if (founder.getSex().equals(Sex.F)){
             females.add(founder);
-            double firstReproduction = founder.getBirthTime() + Sim.MIN_MATING_AGE_F + rnd.nextDouble() * span;
+            double firstReproduction = founder.getBirthTime() + Sim.MIN_MATING_AGE_F + AgeModel.randomWaitingTime(rnd, reproductionRate);
             events.add(new Event(Events.Reproduction, founder, firstReproduction));
         }
         else {
             males.add(founder);
         }
         double death = founder.getBirthTime() + model.randomAge(rnd);
-        founder.setDeath(calendarTime + death);
+        founder.setDeath(death);
         events.add(new Event(Events.Death, founder, founder.getDeathTime()));
     }
 
@@ -101,14 +107,14 @@ public class Simulator {
         Sim child = new Sim(mother, father, calendarTime, sex);
         if (child.getSex().equals(Sex.F)){
             females.add(child);
-            double firstReproduction = child.getBirthTime() + Sim.MIN_MATING_AGE_F + rnd.nextDouble() * span;
+            double firstReproduction = child.getBirthTime() + Sim.MIN_MATING_AGE_F + AgeModel.randomWaitingTime(rnd, reproductionRate);
             events.add(new Event(Events.Reproduction, child, firstReproduction));
         }
         else {
             males.add(child);
         }
         double death = child.getBirthTime() + model.randomAge(rnd);
-        child.setDeath(calendarTime + death);
+        child.setDeath(death);
         events.add(new Event(Events.Death, child, child.getDeathTime()));
     }
 
@@ -159,9 +165,13 @@ public class Simulator {
             return calendarTime + wait;
         }
         double maxReproduction = s.getBirthTime() + Sim.MAX_MATING_AGE_F;
-        double nextTime = calendarTime + span * rnd.nextDouble();
-        if (nextTime < maxReproduction) { return nextTime; }
-        else { return -1; }
+        double wait = AgeModel.randomWaitingTime(rnd, reproductionRate);
+        double nextTime = calendarTime + wait;
+        if (nextTime < maxReproduction) {
+            return nextTime;
+        } else {
+            return -1;
+        }
     }
     public void Reproduction(Sim mother){
         if (mother.getDeathTime() < calendarTime){
