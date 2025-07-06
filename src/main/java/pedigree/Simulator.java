@@ -8,6 +8,7 @@ import pedigree.Sim.*;
 public class Simulator {
     private PriorityQueue<Event> events;
     private PriorityQueue<Sim> males;
+    private Set<Sim> availableMales;
     private PriorityQueue<Sim> females;
     private final AgeModel model;
     private double calendarTime;
@@ -17,7 +18,7 @@ public class Simulator {
     private final double reproductionRate;
 
     private static final double DEFAULT_FIDELITY = 0.1;
-    private static final double DEFAULT_STABLE_RATE = 2.0;
+    private static final double DEFAULT_STABLE_RATE = 2.2;
 
     static class EventComparator implements Comparator<Event>{
         @Override
@@ -35,6 +36,7 @@ public class Simulator {
     public Simulator() {
         events = new PriorityQueue<>(new EventComparator());
         males = new PriorityQueue<>(new PopComparator());
+        availableMales = new TreeSet<>(new PopComparator());
         females = new PriorityQueue<>(new PopComparator());
         model = new AgeModel();
         span = model.expectedParenthoodSpan(Sim.MIN_MATING_AGE_F, Sim.MAX_MATING_AGE_F);
@@ -56,7 +58,7 @@ public class Simulator {
         return males.size() + females.size();
     }
 
-    public enum Events {Birth, Death, Reproduction};
+    public enum Events {Birth, Death, Reproduction, EntersMatingAge, ExitsMatingAge};
 
     public class Event {
         private Events event;
@@ -96,6 +98,8 @@ public class Simulator {
         }
         else {
             males.add(founder);
+            events.add(new Event(Events.EntersMatingAge, founder, founder.getBirthTime() + Sim.MIN_MATING_AGE_M));
+            events.add(new Event(Events.ExitsMatingAge, founder, founder.getBirthTime() + Sim.MAX_MATING_AGE_M));
         }
         double death = founder.getBirthTime() + model.randomAge(rnd);
         founder.setDeath(death);
@@ -112,6 +116,8 @@ public class Simulator {
         }
         else {
             males.add(child);
+            events.add(new Event(Events.EntersMatingAge, child, child.getBirthTime() + Sim.MIN_MATING_AGE_M));
+            events.add(new Event(Events.ExitsMatingAge, child, child.getBirthTime() + Sim.MAX_MATING_AGE_M));
         }
         double death = child.getBirthTime() + model.randomAge(rnd);
         child.setDeath(death);
@@ -131,26 +137,24 @@ public class Simulator {
         return rnd.nextDouble() > fidelity;
     }
 
+    public void EntersMatingAge(Sim male) {
+        availableMales.add(male);
+    }
+
+    public void ExitsMatingAge(Sim male) {
+        availableMales.remove(male);
+    }
+
     public Sim Mate(Sim f){
         if (f.isInARelationship(calendarTime) && isFaithful()){
             return f.getMate();
-        }
-        if (males.isEmpty()){
-            return null;
-        }
-        List<Sim> availableMales = new ArrayList<>();
-        for (Sim m : males){
-            if (m.isMatingAge(calendarTime)){
-                if(!m.isInARelationship(calendarTime) || !isFaithful()){
-                    availableMales.add(m);
-                }
-            }
         }
         if (availableMales.isEmpty()){
             return null;
         }
 
-        Sim male = availableMales.get(rnd.nextInt(availableMales.size()));
+        List<Sim> availableList = new ArrayList<>(availableMales);
+        Sim male = availableList.get(rnd.nextInt(availableList.size()));
 
         f.setMate(male);
         male.setMate(f);

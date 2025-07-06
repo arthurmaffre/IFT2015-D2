@@ -27,6 +27,12 @@ class simulate {
                 case Death:
                     simulator.Death(E.getSim());
                     break;
+                case EntersMatingAge:
+                    simulator.EntersMatingAge(E.getSim());
+                    break;
+                case ExitsMatingAge:
+                    simulator.ExitsMatingAge(E.getSim());
+                    break;
                 case Reproduction:
                     simulator.Reproduction(E.getSim());
                     break;
