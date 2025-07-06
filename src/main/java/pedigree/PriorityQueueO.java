@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.Objects;
 
 /**
- * PriorityQueueO : tas binaire min-heap (log n insert et poll).
+ * PriorityQueueO : tas binaire min-heap (log n insert, poll et remove).
  *
  * @param <T> type des éléments
  */
@@ -40,7 +40,10 @@ public class PriorityQueueO<T> {
         siftUp(heap.size() - 1);
     }
 
-    /** Renvoie et retire le plus petit (ou prioritaire). O(log n). */
+    /**
+     * Retire et renvoie l'élément prioritaire (le plus petit).
+     * O(log n).
+     */
     public T poll() {
         if (heap.isEmpty()) return null;
         T root = heap.get(0);
@@ -52,9 +55,35 @@ public class PriorityQueueO<T> {
         return root;
     }
 
-    /** Renvoie sans retirer le plus prioritaire. */
+    /** Renvoie sans retirer l'élément prioritaire. */
     public T peek() {
         return heap.isEmpty() ? null : heap.get(0);
+    }
+
+    /**
+     * Supprime la première occurrence de {@code element} (égalité via {@code equals}).
+     * @return {@code true} si l'élément était présent et a été retiré.
+     *         Complexité : O(n) pour la recherche + O(log n) pour rétablir le tas.
+     */
+    public boolean remove(T element) {
+        Objects.requireNonNull(element, "element must not be null");
+        int idx = heap.indexOf(element);           // recherche linéaire
+        if (idx == -1) return false;               // non présent
+
+        int lastIdx = heap.size() - 1;
+        if (idx == lastIdx) {                      // dernier élément
+            heap.remove(lastIdx);
+            return true;
+        }
+
+        T last = heap.remove(lastIdx);
+        heap.set(idx, last);
+
+        // Rétablit les propriétés du tas :
+        // on tente les deux opérations (l'une sera neutre)
+        siftDown(idx);
+        siftUp(idx);
+        return true;
     }
 
     public int size()    { return heap.size(); }
