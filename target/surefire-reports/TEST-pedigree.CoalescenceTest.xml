@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="pedigree.PriorityQueueOTest" time="0.063" tests="11" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="pedigree.CoalescenceTest" time="0.006" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="23"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -55,15 +55,5 @@
     <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
     <property name="java.class.version" value="67.0"/>
   </properties>
-  <testcase name="addPollCustomComparatorMaxHeap" classname="pedigree.PriorityQueueOTest" time="0.012"/>
-  <testcase name="handlesDuplicates" classname="pedigree.PriorityQueueOTest" time="0.001"/>
-  <testcase name="pollAndPeekOnEmpty" classname="pedigree.PriorityQueueOTest" time="0.001"/>
-  <testcase name="addPollNaturalOrder" classname="pedigree.PriorityQueueOTest" time="0.001"/>
-  <testcase name="peekDoesNotRemove" classname="pedigree.PriorityQueueOTest" time="0"/>
-  <testcase name="nullInsertionThrows" classname="pedigree.PriorityQueueOTest" time="0.001"/>
-  <testcase name="randomPropertyTest" classname="pedigree.PriorityQueueOTest" time="0.012"/>
-  <testcase name="randomPropertyTest" classname="pedigree.PriorityQueueOTest" time="0.005"/>
-  <testcase name="randomPropertyTest" classname="pedigree.PriorityQueueOTest" time="0.006"/>
-  <testcase name="randomPropertyTest" classname="pedigree.PriorityQueueOTest" time="0.005"/>
-  <testcase name="randomPropertyTest" classname="pedigree.PriorityQueueOTest" time="0.005"/>
+  <testcase name="smallPopulationCoalescesMonotonically" classname="pedigree.CoalescenceTest" time="0.006"/>
 </testsuite>

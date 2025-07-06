@@ -1,4 +1,14 @@
+pedigree/PriorityQueueO.class
+pedigree/Simulator.class
+pedigree/Simulator$Events.class
+pedigree/Simulator$EventComparator.class
 simulate$1.class
+pedigree/Coalescence.class
+pedigree/Coalescence$Point.class
+pedigree/Simulator$PopComparator.class
 pedigree/AgeModel.class
+simulate.class
 pedigree/Sim$Sex.class
+pedigree/Coalescence$1.class
+pedigree/Simulator$Event.class
 pedigree/Sim.class

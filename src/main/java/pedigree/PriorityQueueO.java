@@ -1,12 +1,16 @@
 package pedigree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
 
 /**
- * PriorityQueueO : tas binaire min-heap (log n insert et poll).
- *
+ * PriorityQueueO : tas binaire générique (min‑heap par défaut).
+ * <ul>
+ *   <li>insertion / poll : O(log n)</li>
+ *   <li>construction par <code>addAll</code> : O(n)</li>
+ * </ul>
  * @param <T> type des éléments
  */
 public class PriorityQueueO<T> {
@@ -16,14 +20,15 @@ public class PriorityQueueO<T> {
 
     /* ---------- Constructeurs ---------- */
 
-    /** Ordre naturel (T doit implémenter Comparable). */
+    /** Ordre naturel (T doit implémenter {@link Comparable}). */
     public PriorityQueueO() {
         this(null);
     }
 
-    /** Ordre défini par un Comparator. */
+    /** Ordre défini par un {@link Comparator}. */
+    @SuppressWarnings("unchecked")
     public PriorityQueueO(Comparator<? super T> comparator) {
-        // Si aucun comparator fourni, on en crée un qui s'appuie sur Comparable
+        // Fallback : Comparable.cast + compareTo
         if (comparator == null) {
             this.comp = (a, b) -> ((Comparable<? super T>) a).compareTo(b);
         } else {
@@ -33,14 +38,30 @@ public class PriorityQueueO<T> {
 
     /* ---------- API publique ---------- */
 
-    /** Ajout O(log n). */
+    /** Ajout unique — coût <em>logarithmique</em>. */
     public void add(T element) {
         Objects.requireNonNull(element, "element must not be null");
         heap.add(element);
         siftUp(heap.size() - 1);
     }
 
-    /** Renvoie et retire le plus petit (ou prioritaire). O(log n). */
+    /**
+     * Ajout en bloc de tous les éléments de {@code coll}. Utilise un <em>heapify</em>
+     * bottom‑up pour restaurer la propriété du tas en O(n+m).
+     */
+    public void addAll(Collection<? extends T> coll) {
+        Objects.requireNonNull(coll, "collection must not be null");
+        for (T e : coll) {
+            Objects.requireNonNull(e, "element must not be null");
+            heap.add(e);
+        }
+        // Heapify : dernier parent = (size-2)/2
+        for (int i = (heap.size() - 2) >>> 1; i >= 0; i--) {
+            siftDown(i);
+        }
+    }
+
+    /** Retire et renvoie l'élément prioritaire — O(log n). */
     public T poll() {
         if (heap.isEmpty()) return null;
         T root = heap.get(0);
@@ -52,19 +73,37 @@ public class PriorityQueueO<T> {
         return root;
     }
 
-    /** Renvoie sans retirer le plus prioritaire. */
+    /** Consulte sans retirer. */
     public T peek() {
         return heap.isEmpty() ? null : heap.get(0);
     }
 
-    public int size()    { return heap.size(); }
-    public boolean isEmpty() { return heap.isEmpty(); }
+    /** Supprime la première occurrence de {@code element}. */
+    public boolean remove(T element) {
+        Objects.requireNonNull(element, "element must not be null");
+        int idx = heap.indexOf(element);
+        if (idx == -1) return false;
 
-    /* ---------- Helpers internes ---------- */
+        int lastIdx = heap.size() - 1;
+        if (idx == lastIdx) {
+            heap.remove(lastIdx);
+            return true;
+        }
+        T last = heap.remove(lastIdx);
+        heap.set(idx, last);
+        siftDown(idx);
+        siftUp(idx);
+        return true;
+    }
+
+    public int size()            { return heap.size(); }
+    public boolean isEmpty()     { return heap.isEmpty(); }
+
+    /* ---------- Implémentation interne ---------- */
 
     private void siftUp(int idx) {
         while (idx > 0) {
-            int parent = (idx - 1) >>> 1;                   // division entière par 2
+            int parent = (idx - 1) >>> 1;
             if (comp.compare(heap.get(idx), heap.get(parent)) >= 0) break;
             swap(idx, parent);
             idx = parent;
@@ -80,7 +119,6 @@ public class PriorityQueueO<T> {
 
             if (left  < n && comp.compare(heap.get(left), heap.get(smallest))  < 0) smallest = left;
             if (right < n && comp.compare(heap.get(right), heap.get(smallest)) < 0) smallest = right;
-
             if (smallest == idx) break;
             swap(idx, smallest);
             idx = smallest;
