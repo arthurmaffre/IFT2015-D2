@@ -1,0 +1,37 @@
+-------------------------------------------------------------------------------
+Test set: pedigree.SimulationIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 11, Failures: 1, Errors: 3, Skipped: 0, Time elapsed: 0.022 s <<< FAILURE! - in pedigree.SimulationIntegrationTest
+pedigree.SimulationIntegrationTest.testChildrenReproduceViaEvent  Time elapsed: 0.011 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: La population doit avoir augmenté de 1 après la reproduction des enfants ==> expected: <5> but was: <4>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:559)
+	at pedigree.SimulationIntegrationTest.testChildrenReproduceViaEvent(SimulationIntegrationTest.java:145)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+pedigree.SimulationIntegrationTest.testDeadParentNoReproduction  Time elapsed: 0.001 s  <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "pedigree.Simulator$Event.getSim()" because the return value of "pedigree.Simulator.getEvent()" is null
+	at pedigree.SimulationIntegrationTest.testDeadParentNoReproduction(SimulationIntegrationTest.java:199)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+pedigree.SimulationIntegrationTest.testSimpleReproduction  Time elapsed: 0.001 s  <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "pedigree.Simulator$Event.getSim()" because the return value of "pedigree.Simulator.getEvent()" is null
+	at pedigree.SimulationIntegrationTest.testSimpleReproduction(SimulationIntegrationTest.java:177)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+pedigree.SimulationIntegrationTest.testRepeatedReproductionUntilAgeLimit  Time elapsed: 0 s  <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "pedigree.Simulator$Event.getSim()" because the return value of "pedigree.Simulator.getEvent()" is null
+	at pedigree.SimulationIntegrationTest.testRepeatedReproductionUntilAgeLimit(SimulationIntegrationTest.java:217)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+

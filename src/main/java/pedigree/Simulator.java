@@ -2,7 +2,6 @@ package pedigree;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -10,7 +9,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import pedigree.Sim.*;
 import pedigree.Sim.Sex;
 
 public class Simulator {
@@ -51,7 +49,7 @@ public class Simulator {
         fidelity = DEFAULT_FIDELITY;
         reproductionRate = DEFAULT_STABLE_RATE/span;
         rnd = new Random();
-        calendarTime = 0.0;
+        calendarTime = 0.0; // Starting Time
     }
 
     public double getTime(){
@@ -62,12 +60,20 @@ public class Simulator {
         calendarTime = time;
     }
 
-    public int getPopulation(){
+    public int getPopulation(){ // Donne la population
         return males.size() + females.size();
     }
 
     public enum Events {Birth, Death, Reproduction, EntersMatingAge, ExitsMatingAge};
 
+
+
+
+
+
+
+
+    // Classe de Event
     public class Event {
         private Events event;
         private Sim sim;
@@ -90,6 +96,16 @@ public class Simulator {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
     public Event getEvent() {
         return events.poll();
     }
@@ -98,6 +114,10 @@ public class Simulator {
         return !events.isEmpty();
     }
 
+
+
+
+    // Naissance
     public void Birth(Sim founder){
         if (founder.getSex().equals(Sex.F)){
             females.add(founder);
@@ -132,6 +152,11 @@ public class Simulator {
         events.add(new Event(Events.Death, child, child.getDeathTime()));
     }
 
+
+
+
+
+    // Mort
     public void Death(Sim s){
         if (s.getSex().equals(Sex.F)) {
             females.remove(s);
@@ -140,6 +165,9 @@ public class Simulator {
             males.remove(s);
         }
     }
+
+
+    // Reproduction
 
     public boolean isFaithful(){
         return rnd.nextDouble() > fidelity;
@@ -200,18 +228,5 @@ public class Simulator {
                 calendarTime - mother.getBirthTime() < Sim.MAX_MATING_AGE_F) {
             events.add(new Event(Events.Reproduction, mother, nextTime));
         }
-    }
-
-    /** Population vivante (copie) — utilisé par Coalescence */
-    public Collection<Sim> getLivingPopulation() {
-        List<Sim> pop = new ArrayList<>(males);
-        pop.addAll(females);
-        return pop;
-    }
-
-    /** Constructeur avec seed explicite pour reproductibilité */
-    public Simulator(long seed) {
-        this();               // appelle le constructeur par défaut
-        this.rnd.setSeed(seed);
     }
 }

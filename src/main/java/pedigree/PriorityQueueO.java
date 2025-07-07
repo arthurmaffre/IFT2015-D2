@@ -56,7 +56,7 @@ public class PriorityQueueO<T> {
             heap.add(e);
         }
         // Heapify : dernier parent = (size-2)/2
-        for (int i = (heap.size() - 2) >>> 1; i >= 0; i--) {
+        for (int i = (heap.size() - 2) >> 1; i >= 0; i--) {
             siftDown(i);
         }
     }
