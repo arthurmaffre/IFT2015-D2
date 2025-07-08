@@ -35,7 +35,7 @@ public final class Coalescence {
 
     private static List<Point> compute(Collection<Sim> pop,
                                        Function<Sim, Sim> parentSel,
-                                       double tMax) {
+                                       double horizon) {
         // Tas trié « plus jeune d’abord » (birthTime décroissant)
         PriorityQueueO<Sim> pq = new PriorityQueueO<>((a, b) -> Double.compare(b.getBirthTime(), a.getBirthTime()));
         pq.addAll(pop);
@@ -43,7 +43,8 @@ public final class Coalescence {
         HashSet<Sim> active = new HashSet<>(pop);
         List<Point> traj = new ArrayList<>();
         int n = active.size();
-        if (!pq.isEmpty()) traj.add(new Point(pq.peek().getBirthTime(), n));
+        // 0 = temps présent
+        traj.add(new Point(0.0, n));
 
         while (n > 1 && !pq.isEmpty()) {
             Sim child = pq.poll();
@@ -51,13 +52,12 @@ public final class Coalescence {
             if (parent == null) continue;                   // fondateur
 
             if (!active.add(parent)) {                      // déjà présent → fusion
-                n--;  traj.add(new Point(child.getBirthTime(), n));
+                n--;
+                traj.add(new Point(horizon - child.getBirthTime(), n));
             } else {
                 pq.add(parent);                            // nouvelle lignée à explorer
             }
 
-            if (tMax > 0 && child.getBirthTime() - parent.getBirthTime() > tMax)
-                break;                                     // profondeur max
         }
         return traj;
     }
@@ -74,15 +74,14 @@ public final class Coalescence {
 
         /* ----------- Création des fondateurs & planification Birth ----------- */
         for (int i = 0; i < founders; i++) {
-            double birth = -rnd.nextDouble(horizon);                // dans [‑horizon,0]
-            Sim founder = new Sim(null, null, birth, Sim.Sex.getSex());
-            // Planifie l’événement Birth dans la file du simulateur
-            sim.scheduleBirthEvent(founder);                        // <‑‑ NEW helper
+            Sim founder = new Sim(Sim.Sex.getSex());
+            sim.scheduleBirthEvent(founder);
         }
 
         /* ------------------- Boucle d’exécution des événements ------------------- */
         while (sim.hasEvents()) {
             Simulator.Event e = sim.getEvent();
+            if (e.getTime() > horizon) break;              // stop at horizon
             sim.setTime(e.getTime());
             switch (e.getEvent()) {
                 case Birth          -> sim.Birth(e.getSim());
@@ -92,6 +91,9 @@ public final class Coalescence {
                 case ExitsMatingAge -> sim.ExitsMatingAge(e.getSim());
             }
         }
+        // force un dernier échantillon à horizon
+        sim.setTime(horizon);
+        sim.recordSample();
 
         /* ------------------- Impression des résultats ------------------- */
         // (1) Population vivante tous les 100 ans
