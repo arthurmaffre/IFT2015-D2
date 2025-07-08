@@ -74,15 +74,14 @@ public final class Coalescence {
 
         /* ----------- Création des fondateurs & planification Birth ----------- */
         for (int i = 0; i < founders; i++) {
-            double birth = -rnd.nextDouble(horizon);                // dans [‑horizon,0]
-            Sim founder = new Sim(null, null, birth, Sim.Sex.getSex());
-            // Planifie l’événement Birth dans la file du simulateur
-            sim.scheduleBirthEvent(founder);                        // <‑‑ NEW helper
+            Sim founder = new Sim(Sim.Sex.getSex());
+            sim.scheduleBirthEvent(founder);
         }
 
         /* ------------------- Boucle d’exécution des événements ------------------- */
         while (sim.hasEvents()) {
             Simulator.Event e = sim.getEvent();
+            if (e.getTime() > horizon) break;              // stop at horizon
             sim.setTime(e.getTime());
             switch (e.getEvent()) {
                 case Birth          -> sim.Birth(e.getSim());
@@ -92,6 +91,9 @@ public final class Coalescence {
                 case ExitsMatingAge -> sim.ExitsMatingAge(e.getSim());
             }
         }
+        // force un dernier échantillon à horizon
+        sim.setTime(horizon);
+        sim.recordSample();
 
         /* ------------------- Impression des résultats ------------------- */
         // (1) Population vivante tous les 100 ans
