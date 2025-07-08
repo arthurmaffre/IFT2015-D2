@@ -3,6 +3,7 @@ package pedigree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -129,5 +130,16 @@ public class PriorityQueueO<T> {
         T tmp = heap.get(i);
         heap.set(i, heap.get(j));
         heap.set(j, tmp);
+    }
+
+    /**
+     * Returns a snapshot of the elements currently stored in this queue.
+     * The returned list is independent from the internal heap and
+     * modifications on either side will not affect the other.
+     *
+     * @return copy of the queue's contents in arbitrary order
+     */
+    public List<T> toList() {
+        return new ArrayList<>(heap);
     }
 }
