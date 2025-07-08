@@ -16,7 +16,7 @@ import java.util.function.Function;
  */
 public final class Coalescence {
 
-    /** Point (t, n) : date (année < 0 passé, 0 présent) et nombre de lignées. */
+    /** Point (t, n) : temps (de {@code horizon} vers 0) et nombre de lignées. */
     public record Point(double time, int lineages) {}
 
     /* ===================== Public façade ===================== */
@@ -43,8 +43,8 @@ public final class Coalescence {
         HashSet<Sim> active = new HashSet<>(pop);
         List<Point> traj = new ArrayList<>();
         int n = active.size();
-        // 0 = temps présent
-        traj.add(new Point(0.0, n));
+        // horizon = temps présent
+        traj.add(new Point(horizon, n));
 
         while (n > 1 && !pq.isEmpty()) {
             Sim child = pq.poll();
@@ -53,7 +53,7 @@ public final class Coalescence {
 
             if (!active.add(parent)) {                      // déjà présent → fusion
                 n--;
-                traj.add(new Point(horizon - child.getBirthTime(), n));
+                traj.add(new Point(child.getBirthTime(), n));
             } else {
                 pq.add(parent);                            // nouvelle lignée à explorer
             }
