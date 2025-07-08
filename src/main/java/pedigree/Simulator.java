@@ -58,24 +58,6 @@ public class Simulator {
         return males.size() + females.size();
     }
 
-    /**
-     * Living females at the current simulation time.
-     *
-     * @return unmodifiable view of all alive females
-     */
-    public Collection<Sim> getFemales(){
-        return Collections.unmodifiableCollection(females);
-    }
-
-    /**
-     * Living males at the current simulation time.
-     *
-     * @return unmodifiable view of all alive males
-     */
-    public Collection<Sim> getMales(){
-        return Collections.unmodifiableCollection(males);
-    }
-
     public enum Events {Birth, Death, Reproduction, EntersMatingAge, ExitsMatingAge};
 
     public class Event {
