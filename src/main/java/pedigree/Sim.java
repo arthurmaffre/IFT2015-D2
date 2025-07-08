@@ -62,6 +62,8 @@ public class Sim implements Comparable<Sim>{
     private Sim mate;
     
     private Sex sex;
+
+    
     
     /**
      * 
