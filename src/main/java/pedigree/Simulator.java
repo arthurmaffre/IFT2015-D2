@@ -1,24 +1,35 @@
 package pedigree;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
-import pedigree.Sim.*;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
+
+import pedigree.Sim.Sex;
 
 public class Simulator {
-    private PriorityQueue<Event> events;
-    private PriorityQueue<Sim> males;
+    private PriorityQueueO<Event> events;
+    private PriorityQueueO<Sim> males;
     private Set<Sim> availableMales;
-    private PriorityQueue<Sim> females;
+    private PriorityQueueO<Sim> females;
     private final AgeModel model;
     private double calendarTime;
     private final Random rnd;
     private final double fidelity;
     private final double span;
     private final double reproductionRate;
+    private final double horizon;
+
+    private double nextSample;
+    private final List<PointPop> popSamples;
 
     private static final double DEFAULT_FIDELITY = 0.1;
-    private static final double DEFAULT_STABLE_RATE = 2.2;
+    private static final double DEFAULT_STABLE_RATE = 2.0;
 
     static class EventComparator implements Comparator<Event>{
         @Override
@@ -33,17 +44,28 @@ public class Simulator {
             return Double.compare(o1.getBirthTime(),o2.getBirthTime());
         }
     }
-    public Simulator() {
-        events = new PriorityQueue<>(new EventComparator());
-        males = new PriorityQueue<>(new PopComparator());
+    public Simulator(long seed, double horizon) {
+        events = new PriorityQueueO<>(new EventComparator());
+        males = new PriorityQueueO<>(new PopComparator());
         availableMales = new TreeSet<>(new PopComparator());
-        females = new PriorityQueue<>(new PopComparator());
+        females = new PriorityQueueO<>(new PopComparator());
         model = new AgeModel();
         span = model.expectedParenthoodSpan(Sim.MIN_MATING_AGE_F, Sim.MAX_MATING_AGE_F);
         fidelity = DEFAULT_FIDELITY;
-        reproductionRate = DEFAULT_STABLE_RATE/span;
-        rnd = new Random();
-        calendarTime = 0.0;
+        reproductionRate = DEFAULT_STABLE_RATE / span;
+        rnd = new Random(seed);
+        calendarTime = 0.0; // Starting Time
+        this.horizon = horizon;
+        nextSample = 0.0;
+        popSamples = new ArrayList<>();
+    }
+
+    public Simulator(long seed) {
+        this(seed, 0.0);
+    }
+
+    public Simulator() {
+        this(System.currentTimeMillis(), 0.0);
     }
 
     public double getTime(){
@@ -54,12 +76,23 @@ public class Simulator {
         calendarTime = time;
     }
 
-    public int getPopulation(){
+    public int getPopulation(){ // Donne la population
         return males.size() + females.size();
     }
 
     public enum Events {Birth, Death, Reproduction, EntersMatingAge, ExitsMatingAge};
 
+    /** Point de suivi de la population vivante. */
+    public record PointPop(double time, int pop) {}
+
+
+
+
+
+
+
+
+    // Classe de Event
     public class Event {
         private Events event;
         private Sim sim;
@@ -82,6 +115,16 @@ public class Simulator {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
     public Event getEvent() {
         return events.poll();
     }
@@ -90,6 +133,15 @@ public class Simulator {
         return !events.isEmpty();
     }
 
+    /** Ajoute un événement de naissance sans exécution immédiate. */
+    public void scheduleBirthEvent(Sim sim) {
+        events.add(new Event(Events.Birth, sim, sim.getBirthTime()));
+    }
+
+
+
+
+    // Naissance
     public void Birth(Sim founder){
         if (founder.getSex().equals(Sex.F)){
             females.add(founder);
@@ -104,6 +156,7 @@ public class Simulator {
         double death = founder.getBirthTime() + model.randomAge(rnd);
         founder.setDeath(death);
         events.add(new Event(Events.Death, founder, founder.getDeathTime()));
+        samplePopulation();
     }
 
     public void Birth(Sim mother, Sim father){
@@ -122,8 +175,14 @@ public class Simulator {
         double death = child.getBirthTime() + model.randomAge(rnd);
         child.setDeath(death);
         events.add(new Event(Events.Death, child, child.getDeathTime()));
+        samplePopulation();
     }
 
+
+
+
+
+    // Mort
     public void Death(Sim s){
         if (s.getSex().equals(Sex.F)) {
             females.remove(s);
@@ -131,7 +190,11 @@ public class Simulator {
         else {
             males.remove(s);
         }
+        samplePopulation();
     }
+
+
+    // Reproduction
 
     public boolean isFaithful(){
         return rnd.nextDouble() > fidelity;
@@ -191,6 +254,33 @@ public class Simulator {
         if (nextTime > 0 && nextTime < mother.getDeathTime() &&
                 calendarTime - mother.getBirthTime() < Sim.MAX_MATING_AGE_F) {
             events.add(new Event(Events.Reproduction, mother, nextTime));
+        }
+        samplePopulation();
+    }
+
+    /** Renvoie la population vivante à l'instant courant. */
+    public Collection<Sim> getLivingPopulation() {
+        List<Sim> pop = new ArrayList<>(males.size() + females.size());
+        pop.addAll(males.toList());
+        pop.addAll(females.toList());
+        return pop;
+    }
+
+    /** Échantillons de population tous les 100 ans. */
+    public List<PointPop> getPopSamples() {
+        return popSamples;
+    }
+
+    /** Force l'enregistrement d'un échantillon à l'instant courant. */
+    public void recordSample() {
+        samplePopulation();
+    }
+
+    /** Met à jour la liste de points si l'on a passé le prochain jalon. */
+    private void samplePopulation() {
+        while (calendarTime >= nextSample && nextSample <= horizon) {
+            popSamples.add(new PointPop(nextSample, getPopulation()));
+            nextSample += 100.0;
         }
     }
 }

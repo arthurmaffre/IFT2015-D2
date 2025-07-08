@@ -1,4 +1,6 @@
-simulate$1.class
-pedigree/AgeModel.class
 pedigree/Sim$Sex.class
+pedigree/Coalescence$1.class
+pedigree/Coalescence.class
+pedigree/AgeModel.class
+pedigree/Coalescence$Point.class
 pedigree/Sim.class
