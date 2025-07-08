@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
+
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -13,10 +13,10 @@ import java.util.TreeSet;
 import pedigree.Sim.Sex;
 
 public class Simulator {
-    private PriorityQueue<Event> events;
-    private PriorityQueue<Sim> males;
+    private PriorityQueueO<Event> events;
+    private PriorityQueueO<Sim> males;
     private Set<Sim> availableMales;
-    private PriorityQueue<Sim> females;
+    private PriorityQueueO<Sim> females;
     private final AgeModel model;
     private double calendarTime;
     private final Random rnd;
@@ -45,10 +45,10 @@ public class Simulator {
         }
     }
     public Simulator(long seed, double horizon) {
-        events = new PriorityQueue<>(new EventComparator());
-        males = new PriorityQueue<>(new PopComparator());
+        events = new PriorityQueueO<>(new EventComparator());
+        males = new PriorityQueueO<>(new PopComparator());
         availableMales = new TreeSet<>(new PopComparator());
-        females = new PriorityQueue<>(new PopComparator());
+        females = new PriorityQueueO<>(new PopComparator());
         model = new AgeModel();
         span = model.expectedParenthoodSpan(Sim.MIN_MATING_AGE_F, Sim.MAX_MATING_AGE_F);
         fidelity = DEFAULT_FIDELITY;
