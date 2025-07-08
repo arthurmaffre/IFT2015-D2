@@ -2,6 +2,7 @@ package pedigree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -105,6 +106,8 @@ public final class Coalescence {
         // (2) Coalescence
         List<Point> pat = paternal(sim, horizon);
         List<Point> mat = maternal(sim, horizon);
+        Collections.reverse(pat);
+        Collections.reverse(mat);
 
         System.out.println("time,paternal,maternal");
         int m = Math.min(pat.size(), mat.size());
