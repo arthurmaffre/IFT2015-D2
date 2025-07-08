@@ -260,8 +260,9 @@ public class Simulator {
 
     /** Renvoie la population vivante à l'instant courant. */
     public Collection<Sim> getLivingPopulation() {
-        List<Sim> pop = new ArrayList<>(males);
-        pop.addAll(females);
+        List<Sim> pop = new ArrayList<>(males.size() + females.size());
+        pop.addAll(males.toList());
+        pop.addAll(females.toList());
         return pop;
     }
 
